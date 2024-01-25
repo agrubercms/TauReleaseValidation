@@ -148,6 +148,7 @@ if __name__ == '__main__':
     tauCollection = args.tauCollection
     mvaid = args.mvaid
     no_anti_lepton = args.noAntiLepton
+    manual_query = args.manual_query
     if len(localdir) > 1 and localdir[-1] != "/":
         localdir += "/"
     inputfiles = args.inputfiles
@@ -175,13 +176,9 @@ if __name__ == '__main__':
             filelist = getFilesFromEOS(path)
         elif storageSite == "das":
             filelist = getFilesFromDAS(
-                RelVal, runtype_to_sample[runtype], globalTag, miniaod, exact)
+                RelVal, runtype_to_sample[runtype], globalTag, miniaod, manual_query, exact)
         elif storageSite == 'loc':
-            filelist = getFilesFromEOS(
-                localdir + runtype_to_sample[runtype] +
-                "/" + RelVal + '-' + globalTag + '/',
-                cmseospath=False)
-
+            filelist = localdir
         if not filelist:
             print ('Sample', RelVal, runtype, 'does not exist in', path)
             sys.exit(0)

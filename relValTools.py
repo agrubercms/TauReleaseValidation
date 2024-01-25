@@ -19,6 +19,7 @@ def addArguments(parser, produce=True, compare=False):
     parser.add_argument('--debug', default=False, help="Debug option [Default: %(default)s]", action="store_true")
     parser.add_argument('--dryRun', default=False, action="store_true",  help='Dry run - no plots [Default: %(default)s]')
     parser.add_argument('--skip', default=False, action="store_true",  help='skip production of root files and make plots directly')
+    parser.add_argument('--manual_query', default="",  help='enter manual DAS file query, only allowed together with --s das')
 
     if produce:
         parser.add_argument('--release', default="CMSSW_9_4_0_pre1", help='Release')
@@ -82,9 +83,12 @@ def getFilesFromEOS(path, cmseospath=True):
     return files
 
 
-def getFilesFromDAS(release, runtype, globalTag, miniaod, exact=""):
+def getFilesFromDAS(release, runtype, globalTag, miniaod, manual_query="", exact=""):
     '''Get proxy with "voms-proxy-init -voms cms" to use this option.'''
-    query = "file dataset=/{0}/{1}-{2}/{3}".format(runtype, release, globalTag, miniaod)
+    if manual_query:
+        query=manual_query
+    else:
+        query = "file dataset=/{0}/{1}-{2}/{3}".format(runtype, release, globalTag, miniaod)
     if exact != "": query = "file dataset={0}".format(exact)
     # Examples/Hardcoding:
     #query = "file dataset=/TauGun_Pt-15to500_14TeV-pythia8/Run3Summer19MiniAOD-2023Scenario_106X_mcRun3_2023_realistic_v3-v2/MINIAODSIM"
@@ -95,7 +99,9 @@ def getFilesFromDAS(release, runtype, globalTag, miniaod, exact=""):
         query = "file dataset=/*{0}*/*{1}-{2}*/{3}".format(runtype, release, globalTag, miniaod) # TODO: Doesn't work! Finds dataset, but not files for all datasets
         print ("First attempt unsuccessful. Generalizing query. May take a while.... query:", query)
         result = subprocess.check_output("dasgoclient --query='" + query + "'", shell=True).decode("utf-8")
+
     files = ["root://cms-xrd-global.cern.ch/" + s.strip() for s in result.splitlines()]
+    #files = ["root://cms-xrd-global.cern.ch/" + s.strip() for s in result.splitlines()]
 
     print ("files:", files)
     return files
